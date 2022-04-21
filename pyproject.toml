@@ -11,6 +11,9 @@ GitPython = "^3.1.11"
 requests = "^2.25.0"
 pytz = "^2022.1"
 
+[tool.poetry.scripts]
+discord-backup = "main:main"
+
 [tool.poetry.dev-dependencies]
 
 [build-system]

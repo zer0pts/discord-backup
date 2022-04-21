@@ -148,5 +148,8 @@ async def on_connect():
         await client.close()
         raise e
 
-if __name__ == '__main__':
+def main():
     client.run(token)
+
+if __name__ == '__main__':
+    main()
