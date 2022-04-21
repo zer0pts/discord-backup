@@ -12,7 +12,7 @@ requests = "^2.25.0"
 pytz = "^2022.1"
 
 [tool.poetry.scripts]
-discord-backup = "discord-backup.main:main"
+discord-backup = "discord_backup.main:main"
 
 [tool.poetry.dev-dependencies]
 
