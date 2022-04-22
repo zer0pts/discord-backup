@@ -123,6 +123,18 @@ async def archive(g: discord.Guild, category_prefix: str):
         logger.debug("category {}".format(c.name))
         await archive_category(dirname, c)
 
+async def remove(g: discord.Guild, category_prefix: str):
+    """
+    全てを闇に葬り去る禁忌の関数（いいえ）
+    """
+    for cat in g.categories:
+        if not cat.name.lower().startswith(category_prefix.lower()):
+            continue
+        for ch in cat.channels:
+            await ch.delete()
+        await cat.delete()
+
+
 @client.event
 async def on_connect():
     try:
@@ -139,8 +151,17 @@ async def on_connect():
         async for msg in ch.history(limit=100):
             if msg.content.startswith(ARCHIVE_COMMAND_PREFIX):
                 logger.debug("got command: {}".format(msg.content))
-                await archive(guild, msg.content[len(ARCHIVE_COMMAND_PREFIX):].lower())
-                await ch.send(":heavy_check_mark: archived {}".format(msg.content[len(ARCHIVE_COMMAND_PREFIX):]))
+
+                prefix = msg.content[len(ARCHIVE_COMMAND_PREFIX):].lower()
+                if len(prefix) < 8:
+                    await ch.send(":x: too short prefix")
+                    continue
+
+                await archive(guild, prefix)
+                await ch.send(":white_check_mark: archived {}".format(prefix))
+
+                await remove(guild, prefix)
+                await ch.send(":boom: removed {}".format(prefix))
 
         # 最終的に全ての処理でここにたどり着く
         await client.close()
