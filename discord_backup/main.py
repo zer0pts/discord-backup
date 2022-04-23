@@ -63,7 +63,7 @@ async def format_reaction(d: Path, r: discord.Reaction) -> str:
         users.append(name_of(u))
     if isinstance(r.emoji, (discord.Emoji, discord.PartialEmoji)):
         emoji_path = await get_emoji(d, r.emoji)
-        return "![{} by {}]({})".format(r.emoji.name, ",".join(users), os.path.relpath(emoji_path, d))
+        return "![{}]({}) by {}".format(r.emoji.name, os.path.relpath(emoji_path, d), ",".join(users))
     elif isinstance(r.emoji, str):
         return "{} by {}".format(r.emoji, ",".join(users))
     else:
@@ -111,9 +111,11 @@ async def archive_category(directory: Path, category: discord.CategoryChannel):
         logger.debug("  channel {}".format(ch.name))
         await archive_channel(cat_dir, ch)
 
-async def archive(g: discord.Guild, category_prefix: str):
+async def archive(g: discord.Guild, category_prefix: str) -> bool:
     # categoryをfilter
     categories = [c for c in g.categories if c.name.lower().startswith(category_prefix)]
+    if len(categories) == 0:
+        return False
 
     y = datetime.now().strftime("%Y")
     dirname = Path(y) / category_prefix
@@ -122,17 +124,21 @@ async def archive(g: discord.Guild, category_prefix: str):
     for c in categories:
         logger.debug("category {}".format(c.name))
         await archive_category(dirname, c)
+    return True
 
-async def remove(g: discord.Guild, category_prefix: str):
+async def remove(g: discord.Guild, category_prefix: str) -> bool:
     """
     全てを闇に葬り去る禁忌の関数（いいえ）
     """
-    for cat in g.categories:
-        if not cat.name.lower().startswith(category_prefix.lower()):
-            continue
+    categories = [c for c in g.categories if c.name.lower().startswith(category_prefix)]
+    if len(categories) == 0:
+        return False
+
+    for cat in categories:
         for ch in cat.channels:
             await ch.delete()
         await cat.delete()
+    return True
 
 
 @client.event
@@ -157,11 +163,13 @@ async def on_connect():
                     await ch.send(":x: too short prefix")
                     continue
 
-                await archive(guild, prefix)
-                await ch.send(":white_check_mark: archived {}".format(prefix))
+                is_archived = await archive(guild, prefix)
+                if is_archived:
+                    await ch.send(":white_check_mark: archived {}".format(prefix))
 
-                await remove(guild, prefix)
-                await ch.send(":boom: removed {}".format(prefix))
+                is_removed = await remove(guild, prefix)
+                if is_removed:
+                    await ch.send(":boom: removed {}".format(prefix))
 
         # 最終的に全ての処理でここにたどり着く
         await client.close()
