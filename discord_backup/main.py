@@ -34,7 +34,7 @@ def find_guild_by_id(guild_id: int) -> Optional[discord.Guild]:
     return None
 
 async def find_channel_by_id(g: discord.Guild, channel_id: int) -> Optional[discord.TextChannel]:
-    channels = await g.fetch_channels() 
+    channels = await g.fetch_channels()
     for ch in channels:
         if ch.id == channel_id:
             return ch
@@ -72,7 +72,7 @@ async def format_reaction(d: Path, r: discord.Reaction) -> str:
 
 async def format_message(d: Path, msg: discord.Message) -> str:
     # メッセージのformat
-    s = """**[{author}](#{id})** {datetime}\n<br/>\n{content}\n<br/>\n""".format(
+    s = """**[{author}](#{id})** {datetime}\n<br/>\n{content}\n\n""".format(
         id=msg.id,
         author=name_of(msg.author),
         datetime=tz.localize(msg.created_at).strftime("%Y/%m/%d %H:%M:%S%z"),
@@ -83,9 +83,9 @@ async def format_message(d: Path, msg: discord.Message) -> str:
     for a in msg.attachments:
         path = await get_attachment(d, a)
         if a.content_type and a.content_type.startswith("image"):
-            s += "![{}]({})\n<br>\n".format(a.filename, os.path.relpath(path, d))
+            s += "![{}]({})\n\n".format(a.filename, os.path.relpath(path, d))
         else:
-            s += "[{}]({})\n<br>\n".format(a.filename, os.path.relpath(path, d))
+            s += "[{}]({})\n\n".format(a.filename, os.path.relpath(path, d))
 
     # reactions (DLもする）
     for r in msg.reactions:
