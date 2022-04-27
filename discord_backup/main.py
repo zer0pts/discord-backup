@@ -108,6 +108,8 @@ async def archive_channel(directory: Path, channel: discord.TextChannel):
 async def archive_category(directory: Path, category: discord.CategoryChannel):
     cat_dir = directory / category.name
     for ch in category.channels:
+        if not isinstance(ch, discord.TextChannel):
+            continue
         logger.debug("  channel {}".format(ch.name))
         await archive_channel(cat_dir, ch)
 
